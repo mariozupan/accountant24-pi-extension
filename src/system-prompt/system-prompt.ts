@@ -1,0 +1,79 @@
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { listAccounts, listPayees, listTags } from "../ledger";
+import { getMemory } from "../memory";
+
+// Load system.md at module init time (cached — no Bun text import needed)
+const STATIC_PREFIX: string = readFileSync(join(dirname(new URL(import.meta.url).pathname), "system.md"), "utf-8");
+
+export interface ToolPromptMeta {
+  name: string;
+  snippet: string;
+  guidelines?: string[];
+}
+
+export interface SystemPromptContext {
+  today: string;
+  memory: string;
+  accounts: string[];
+  payees: string[];
+  tags: string[];
+  tools: ToolPromptMeta[];
+}
+
+// ── Public API ────────────────────────────────────────────────────────
+
+export async function buildSystemPrompt(): Promise<string> {
+  const today = new Date().toISOString().split("T")[0];
+  const [memory, accounts, payees, tags] = await Promise.all([getMemory(), listAccounts(), listPayees(), listTags()]);
+  return getSystemPrompt({ today, memory, accounts, payees, tags, tools: [] });
+}
+
+export function getSystemPrompt(ctx: SystemPromptContext): string {
+  const parts: string[] = [STATIC_PREFIX];
+
+  // ── Tools section (after static prefix, before dynamic context) ────
+  if (ctx.tools.length > 0) {
+    const snippetLines = ctx.tools.map((t) => `- ${t.name}: ${t.snippet}`);
+    let toolsSection = `\n\n<tools>\nAvailable tools:\n${snippetLines.join("\n")}`;
+
+    const allGuidelines = ctx.tools.flatMap((t) => t.guidelines ?? []);
+    if (allGuidelines.length > 0) {
+      toolsSection += `\n\nGuidelines:\n${allGuidelines.map((g) => `- ${g}`).join("\n")}`;
+    }
+
+    toolsSection += "\n</tools>";
+    parts.push(toolsSection);
+  }
+
+  // ── Dynamic context ────────────────────────────────────────────────
+  parts.push("\n\n<context>");
+
+  parts.push(`\n\n<date>\nToday's date: ${ctx.today}\n</date>`);
+
+  if (ctx.memory) {
+    parts.push(`\n\n<memory>\n${ctx.memory}\n</memory>`);
+  }
+
+  parts.push(
+    ctx.accounts.length > 0
+      ? `\n\n<accounts>\nAll known accounts:\n${ctx.accounts.join("\n")}\n</accounts>`
+      : `\n\n<accounts>\nNo accounts found.\n</accounts>`,
+  );
+
+  parts.push(
+    ctx.payees.length > 0
+      ? `\n\n<payees>\nAll known payees:\n${ctx.payees.join("\n")}\n</payees>`
+      : `\n\n<payees>\nNo payees found.\n</payees>`,
+  );
+
+  parts.push(
+    ctx.tags.length > 0
+      ? `\n\n<tags>\nAll known tags:\n${ctx.tags.join("\n")}\n</tags>`
+      : `\n\n<tags>\nNo tags found.\n</tags>`,
+  );
+
+  parts.push("\n\n</context>");
+
+  return parts.join("");
+}

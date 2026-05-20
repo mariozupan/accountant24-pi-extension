@@ -1,0 +1,16 @@
+{
+  "name": "accountant24-extension",
+  "version": "1.0.0",
+  "description": "Accountant24 pi coding agent extension — domain-specific accounting tools, commands, and system prompt for hledger-based bookkeeping.",
+  "keywords": [
+    "pi-package"
+  ],
+  "pi": {
+    "extensions": [
+      "./src/pi-extension.ts"
+    ]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  }
+}

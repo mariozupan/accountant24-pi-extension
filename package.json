@@ -12,5 +12,8 @@
   },
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "*"
+  },
+  "dependencies": {
+    "diff": "^9.0.0"
   }
 }

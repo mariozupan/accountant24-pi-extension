@@ -20,7 +20,7 @@ Accountant24 gives pi the ability to manage your finances through natural conver
 
 ## Installation
 
-```bash
+```
 pi install git:github.com/mariozupan/accountant24-pi-extension
 
 That's it. The extension auto-loads on every pi startup. No config changes needed.

@@ -14,6 +14,11 @@
     "@earendil-works/pi-coding-agent": "*"
   },
   "dependencies": {
-    "diff": "^9.0.0"
+    "chalk": "^5.6.2",
+    "diff": "^9.0.0",
+    "file-type": "^22.0.1"
+  },
+  "scripts": {
+    "postinstall": "node -e \"const fs=require('fs'),path=require('path');const pkg=JSON.parse(fs.readFileSync(path.join(__dirname,'package.json'),'utf8'));const deps=pkg.dependencies||{};const missing=Object.keys(deps).filter(dep=>!fs.existsSync(path.join(__dirname,'node_modules',dep)));if(missing.length){console.log('🔧 Installing missing dependencies:',missing.join(', '));require('child_process').execSync('npm install',{stdio:'inherit'});}else{console.log('✅ All extension dependencies already installed.');}\""
   }
 }

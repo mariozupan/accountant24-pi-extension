@@ -28,7 +28,6 @@ That's it. The extension auto-loads on every pi startup. No config changes neede
 
 ### Verify installation
 
-```bash
 pi
 # You should see the Accountant24 header on startup
 # Type /accounts to verify tools are loaded

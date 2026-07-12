@@ -33,6 +33,12 @@ export async function ensureScaffolded(): Promise<void> {
     writeIfNotExists(outputPath, content);
   }
 
+  const isNew = !existsSync(home);
+  // ... (existing mkdir, writeIfNotExists, gitInit code)
+  if (isNew) {
+    console.log("Workspace created at", home);
+  }
+
   const freshRepo = await gitInit(home);
   if (freshRepo) {
     await commitAll(home, "Initial Accountant24 setup");

@@ -78,7 +78,7 @@ export function createExtension(settingsManager: SettingsManager): ExtensionFact
       if (freshScaffold) {
         pi.sendMessage({
           customType: "info",
-          content: [{ type: "text", text: "Workspace created at `./zupsy-hledger-journals`." }],
+          content: [{ type: "text", text: "Workspace wiley-2027 Accountant24, hledger extension, with zupsy Croatian journals created at `./zupsy-hledger-jiurnals`." }],
           display: true,
         });
       }

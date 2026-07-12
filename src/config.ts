@@ -1,7 +1,6 @@
-import { homedir } from "node:os";
 import { join } from "node:path";
 
-export const ACCOUNTANT24_HOME = process.env.ACCOUNTANT24_HOME ?? join(homedir(), "Accountant24");
+export let ACCOUNTANT24_HOME = process.env.ACCOUNTANT24_HOME ?? join(process.cwd(), "zupsy-hledgers-journals");
 export let MEMORY_PATH = join(ACCOUNTANT24_HOME, "memory.md");
 export let LEDGER_DIR = join(ACCOUNTANT24_HOME, "ledger");
 export let FILES_DIR = join(ACCOUNTANT24_HOME, "files");

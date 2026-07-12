@@ -74,8 +74,14 @@ export function createExtension(settingsManager: SettingsManager): ExtensionFact
 
     // Scaffold workspace + set up UI on session start
     pi.on("session_start", async (_event, ctx) => {
-      await ensureScaffolded();
-
+      const freshScaffold = await ensureScaffolded();
+      if (freshScaffold) {
+        pi.sendMessage({
+          customType: "info",
+          content: [{ type: "text", text: "Workspace created at `./zupsy-hledger-journals`." }],
+          display: true,
+        });
+      }
       if (ctx.hasUI) {
         // Override the framework's "π - dirname" title (runs after updateTerminalTitle)
         setTimeout(setTerminalTitle, 100);
@@ -124,7 +130,7 @@ export function createExtension(settingsManager: SettingsManager): ExtensionFact
             paddingX: settingsManager.getEditorPaddingX(),
           });
           editor.setAutocompleteProvider(autocomplete);
-          editor.setAutocompleteProvider = () => {}; // prevent overwrite
+          editor.setAutocompleteProvider = () => { }; // prevent overwrite
           // No custom footer to set editor on
           return editor;
         });

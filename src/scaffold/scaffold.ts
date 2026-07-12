@@ -20,8 +20,10 @@ function writeIfNotExists(filePath: string, content: string): void {
   }
 }
 
-export async function ensureScaffolded(): Promise<void> {
+
+export async function ensureScaffolded(): Promise<boolean> {
   const home = ACCOUNTANT24_HOME;
+  const isNew = !existsSync(home);
 
   for (const dir of ["ledger", "files", "sessions"]) {
     mkdirSync(join(home, dir), { recursive: true });
@@ -33,14 +35,12 @@ export async function ensureScaffolded(): Promise<void> {
     writeIfNotExists(outputPath, content);
   }
 
-  const isNew = !existsSync(home);
-  // ... (existing mkdir, writeIfNotExists, gitInit code)
-  if (isNew) {
-    console.log("Workspace created at", home);
-  }
-
   const freshRepo = await gitInit(home);
   if (freshRepo) {
     await commitAll(home, "Initial Accountant24 setup");
   }
+
+  return isNew;
 }
+
+

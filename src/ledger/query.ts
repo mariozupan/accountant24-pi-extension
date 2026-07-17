@@ -1,6 +1,7 @@
 import { ACCOUNTANT24_HOME } from "../config";
 import { runHledger } from "./hledger";
 import { resolveSafePath } from "./paths";
+import { CROATIAN_ACCOUNT_MAP } from "./croatian-mapping";
 
 const PERIOD_FLAGS: Record<string, string> = {
   daily: "--daily",
@@ -27,10 +28,29 @@ export async function queryLedger(params: any, signal?: AbortSignal): Promise<Qu
   return { command, output: raw || "(no results)" };
 }
 
+function resolveAccountPattern(pattern: string): string {
+  const trimmed = pattern.trim();
+  // If the pattern is exactly a Croatian code, resolve it
+  if (CROATIAN_ACCOUNT_MAP[trimmed]) {
+    return CROATIAN_ACCOUNT_MAP[trimmed];
+  }
+  // If it starts with digit, try partial match against all codes
+  // so user can type '1000' and get 'assets:bank:1000'
+  if (/^\d/.test(trimmed)) {
+    for (const [code, account] of Object.entries(CROATIAN_ACCOUNT_MAP)) {
+      if (code.startsWith(trimmed) || account.includes(trimmed)) {
+        return account;
+      }
+    }
+  }
+  // Otherwise pass through as-is (could be a regex or a hledger path)
+  return trimmed;
+}
+
 function buildQueryArgs(params: any, resolved: string): string[] {
   const args = [params.report, "-f", resolved];
 
-  if (params.account_pattern) args.push(params.account_pattern);
+  if (params.account_pattern) args.push(resolveAccountPattern(params.account_pattern));
   if (params.description_pattern) args.push(`desc:${params.description_pattern}`);
   if (params.payee_pattern) args.push(`payee:${params.payee_pattern}`);
   if (params.amount_filter) args.push(`amt:${params.amount_filter}`);

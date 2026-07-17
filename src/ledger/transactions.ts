@@ -4,6 +4,7 @@ import { ACCOUNTANT24_HOME, LEDGER_DIR } from "../config";
 import { generateDiff } from "../files/diff";
 import { HledgerCommandError, hledgerCheck } from "./hledger";
 import { resolveSafePath } from "./paths";
+import { CROATIAN_ACCOUNT_MAP, isMapped } from "./croatian-mapping";
 
 // ── Types ───────────────────────────────────────────────────────────
 
@@ -31,7 +32,22 @@ interface FormattedEntry {
   fullFilePath: string;
 }
 
-// ── Public ──────────────────────────────────────────────────────────
+function resolveAccount(accountStr: string): string {
+  const trimmed = accountStr.trim();
+  // If it looks like a raw Croatian code (starts with digit), resolve it
+  if (/^\d/.test(trimmed)) {
+    const resolved = CROATIAN_ACCOUNT_MAP[trimmed];
+    if (resolved) return resolved;
+    // Attempt partial match: user provided only code part, check if it matches a code in map
+    for (const [code, hledgerAccount] of Object.entries(CROATIAN_ACCOUNT_MAP)) {
+      if (trimmed === code) return hledgerAccount;
+    }
+  }
+  // Also handle the Russian-doll case hledger path passed directly, pass it through
+  return trimmed;
+}
+
+// ── Public API ──────────────────────────────────────────────────────
 
 export async function addTransactions(
   paramsList: AddTransactionParams[],
@@ -54,7 +70,13 @@ export async function addTransactions(
 function validateAll(paramsList: AddTransactionParams[]): void {
   for (let i = 0; i < paramsList.length; i++) {
     try {
-      validateInputs(paramsList[i]);
+      const params = paramsList[i];
+      // Resolve accounts for all postings
+      params.postings = params.postings.map((p) => ({
+        ...p,
+        account: resolveAccount(p.account),
+      }));
+      validateInputs(params);
     } catch (e) {
       if (paramsList.length > 1 && e instanceof Error) {
         throw new Error(`Transaction ${i + 1}: ${e.message}`);

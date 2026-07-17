@@ -62,13 +62,20 @@ const Params = Type.Object({
 
 const LABEL = "Query Ledger";
 
+const GUIDELINES = [
+  "account_pattern can be a regex, a hledger path, or a Croatian code (e.g. 1000, 6630, 220). Croatian codes are resolved to their hledger equivalents automatically.",
+];
+
 export const queryTool: ToolDefinition<typeof Params, QueryLedgerResult> = {
   name: "query",
   label: LABEL,
   description:
     "Run an hledger report against the journal. Supports balance, register, income statement, balance sheet, and more with structured filters.",
   promptSnippet: "Run hledger reports (balance, register, income statement, etc.)",
-  promptGuidelines: [`Available report types: ${REPORT_TYPES}.`],
+  promptGuidelines: [
+    `Available report types: ${REPORT_TYPES}.`,
+    `account_pattern: if it starts with a digit, it will be treated as a Croatian code and resolved automatically.`,
+  ],
   parameters: Params,
 
   renderCall: createRenderCall({ label: LABEL }),

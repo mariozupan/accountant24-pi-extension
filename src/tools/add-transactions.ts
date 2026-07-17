@@ -4,7 +4,7 @@ import { type AddTransactionsResult, addTransactions } from "../ledger";
 import { createRenderCall, createRenderResult } from "./tool-renderer";
 
 const Posting = Type.Object({
-  account: Type.String({ description: "Account name, e.g. Expenses:Food:Groceries" }),
+  account: Type.String({ description: "Account name, e.g. Expenses:Food:Groceries, or a Croatian code like 1000, 6630, 220 (resolved automatically to assets:bank:1000, etc.)" }),
   amount: Type.Number({ description: "Amount — use negative for outflows (e.g. -45), positive for inflows" }),
   currency: Type.String({ description: "Currency code, e.g. USD, EUR" }),
 });
@@ -44,11 +44,16 @@ const Params = Type.Object({
 
 const LABEL = "Add Transactions";
 
+const GUIDELINES = [
+  "Account field accepts either hledger paths (e.g. Expenses:Food) or Croatian codes (e.g. 1000, 6630, 220). Croatian codes resolve automatically.",
+];
+
 export const addTransactionsTool: ToolDefinition<typeof Params, AddTransactionsResult> = {
   name: "add_transactions",
   label: LABEL,
   description: "Add one or more transactions. Auto-routes to the correct monthly files and validates.",
   promptSnippet: "Record transactions (auto-routes to monthly files, validates)",
+  promptGuidelines: GUIDELINES,
   parameters: Params,
 
   renderCall: createRenderCall({ label: LABEL }),
